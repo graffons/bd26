@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A Little Journey to You ♡</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Caveat:wght@500;700&display=swap');
+:root{--ink:#8e527c;--pink:#f7b8d0;--lav:#c9b8f4;--cream:#fff7ee;--green:#b7d9b1}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(#f9d7ec,#d9d2fb 60%,#fff0df);color:var(--ink);font-family:'Press Start 2P',monospace;display:flex;align-items:center;justify-content:center;padding:16px;overflow-x:hidden}
+.wrap{width:min(960px,100%);text-align:center}.eyebrow{font-size:10px;letter-spacing:1px;line-height:1.8}.title{font-size:clamp(18px,4vw,30px);line-height:1.7;margin:12px 0;color:#9b5c91;text-shadow:2px 2px #fff}.subtitle{font-family:'VT323',monospace;font-size:26px;margin:6px 0 14px}
+.panel{background:#fff9f5ef;border:4px solid white;outline:3px solid #d7a9d3;border-radius:12px;padding:clamp(12px,3vw,24px);box-shadow:0 9px 0 #c8a1ce;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:3px solid #fff;outline:2px solid #d9b4d9;border-radius:5px;background:#e8d9ff;touch-action:none}
+button{font:inherit;font-size:10px;line-height:1.7;border:2px solid white;background:#ef8fb3;color:#fff;border-radius:999px;padding:12px 16px;box-shadow:0 3px 0 #c76f9b;cursor:pointer;margin:5px;transition:transform .15s ease}button:hover{transform:translateY(-2px)}button.secondary{background:#fff;color:#9b5c91;border-color:#e6b8d0}button:active{transform:translateY(2px);box-shadow:0 1px 0 #c76f9b}
+.hud{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:9px;line-height:1.8;margin:0 0 10px}.controls{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}.move{display:flex;gap:8px}.touch{width:58px;height:52px;padding:0;font-size:18px;touch-action:none}
+.help{font-family:'VT323',monospace;font-size:22px;line-height:1.2;margin:10px 0 0}.hidden{display:none!important}
+.letter{max-width:620px;margin:10px auto 0;background:#fffdf6;border:3px solid #efbfd3;box-shadow:0 6px 0 #e6c5dc;padding:clamp(18px,4vw,32px);font-family:'Caveat',cursive;font-weight:700;font-size:38px;line-height:1.25;text-align:center;color:#77516f;min-height:140px;white-space:pre-wrap;background-image:repeating-linear-gradient(#fffdf6 0 44px,#f6dbe6 44px 46px)}
+.heart{color:#ec7cae;display:inline-block;animation:beat 1.2s ease-in-out infinite}@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.pixel-deco{font-size:24px;letter-spacing:12px;margin:10px}
+.choice-buttons{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:14px 0 8px}
+.reaction{max-width:620px;margin:10px auto 14px}
+.reaction .help{margin:8px 0}
+.reaction-gif{display:block;width:min(100%,320px);max-height:240px;object-fit:contain;margin:10px auto;border:3px solid #efbfd3;border-radius:8px}
+.level-tag{font-size:9px;line-height:1.8;margin:0 0 8px;color:#a45c91}
+/* page fade between the site and the game */
+#pageFade{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:linear-gradient(#f9d7ec,#e4d6ff);font-size:40px;color:#ec7cae;opacity:1;transition:opacity .45s ease;pointer-events:none}
+#pageFade.hide{opacity:0}#pageFade span{animation:beat 1s ease-in-out infinite}
+/* tiny music pill that keeps the site's song going */
+.music-pill{position:fixed;top:10px;left:10px;z-index:50;display:flex;align-items:center;gap:8px;max-width:min(300px,calc(100vw - 20px));background:#fffafc;border:2px solid #d7a9d3;border-radius:999px;padding:5px 6px 5px 12px;box-shadow:0 3px 0 #e2bfd9;font:16px 'VT323',monospace;color:#8e527c}
+.music-pill .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.music-pill button{margin:0;padding:4px 9px;font-size:9px;box-shadow:none}
+.music-pill.playing .n{display:inline-block;animation:beat 1s ease-in-out infinite}
+@media(min-width:700px){.touch-controls{display:none}}@media(max-width:699px){.eyebrow{font-size:8px}.controls{margin-top:8px}.touch{width:52px;height:48px}.letter{font-size:32px}body{padding-top:56px}}
+</style>
+</head>
+<body>
+<div id="pageFade"><span>♡</span></div>
+<div class="music-pill" id="musicPill"><span class="n">♫</span><span class="t" id="pillTitle">our little soundtrack</span><button id="pillBtn" aria-label="Play or pause music">▶</button><audio id="gameAudio" preload="metadata"></audio></div>
+<main class="wrap">
+  <div class="eyebrow">A TINY BIRTHDAY ADVENTURE</div>
+  <h1 class="title">A Little Journey to You <span class="heart">♡</span></h1>
+  <section class="panel" id="start">
+    <canvas id="preview" width="320" height="96" style="max-width:420px;margin:0 auto 6px" aria-label="Meet the characters"></canvas>
+    <div class="subtitle">A little adventure, just for you.</div>
+    <p class="help">Collect the floating hearts and find the mailbox at the end.</p>
+    <p class="help">No rush, no lives to lose. Just a tiny journey ♡</p><p class="help">Find the flower to unlock magic balls. Press X / K to throw them at HATE!</p>
+    <button id="play">PLAY THE GAME ♡</button>
+    <button class="secondary" id="backFromStart">BACK TO BIRTHDAY SITE</button>
+  </section>
+  <section class="panel hidden" id="game">
+    <div class="level-tag" id="levelTag">LEVEL 1 · THE LITTLE JOURNEY</div>
+    <div class="hud"><span id="count">♡ Hearts: 0 / 5</span><span>Move: ← → or A / D · Jump: Space / ↑</span></div>
+    <canvas id="world" width="800" height="360" aria-label="Pixel platform game"></canvas>
+    <div class="controls touch-controls">
+      <div class="move"><button class="touch" id="left" aria-label="Move left">◀</button><button class="touch" id="right" aria-label="Move right">▶</button></div>
+      <div class="move"><button class="touch" id="jump" aria-label="Jump">↑</button><button class="touch" id="shoot" aria-label="Throw magic ball">✦</button></div>
+    </div>
+    <p class="help" id="gameHelp">Collect hearts, grab the flower power-up, and press X / K to throw magic balls at the HATE enemies!</p>
+    <button class="secondary" id="restart">START OVER</button>
+  </section>
+  <section class="panel hidden" id="ending">
+    <div class="pixel-deco">♡ ✦ ♡ ✦ ♡</div>
+    <div class="subtitle">You found a little something...</div>
+    <div class="letter" id="letter"></div>
+    <div class="choice-buttons" id="choiceButtons">
+      <button id="notCute">I'M NOT CUTE 🙄</button>
+      <button class="secondary" id="askParents">ASK MOM &amp; DAD</button>
+    </div>
+    <div class="reaction hidden" id="reaction" aria-live="polite">
+      <p class="help" id="reactionText"></p>
+      <img id="rajniGif" class="reaction-gif hidden" src="./good-joke-comedy.gif" alt="Rajinikanth laughing" />
+    </div>
+    <div id="finalControls" class="hidden">
+      <button id="again">PLAY AGAIN</button>
+      <button class="secondary" id="backFromEnd">BACK TO OUR LITTLE WORLD</button>
+    </div>
+  </section>
+</main>
+<script>
+/* ---------- music that carries over from the birthday site ---------- */
+const SONGS=[
+ {title:'you got me rocking and reeling',src:'music/you got me rocking and reeling.mp3'},
+ {title:'Haareya',src:'music/Haareya.mp3'},
+ {title:'Good Luck Charm',src:'music/Good Luck Charm.mp3'},
+ {title:'Pyar Encore',src:'music/Pyar Encore.mp3'}
+];
+const Music=(()=>{
+  const KEY='aavaniMusic',audio=document.getElementById('gameAudio'),pill=document.getElementById('musicPill'),btn=document.getElementById('pillBtn'),title=document.getElementById('pillTitle');
+  let cur=0,lastSave=0;
+  function read(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify({i:cur,t:audio.currentTime||0,playing:!audio.paused}))}catch(e){}}
+  function load(i,t){cur=(i+SONGS.length)%SONGS.length;audio.src=SONGS[cur].src;title.textContent=SONGS[cur].title;if(t)audio.addEventListener('loadedmetadata',()=>{try{audio.currentTime=t}catch(e){}},{once:true})}
+  function play(){return audio.play().catch(()=>{throw 0})}
+  function ui(){const p=!audio.paused;btn.textContent=p?'Ⅱ':'▶';pill.classList.toggle('playing',p)}
+  const st=read();let wantPlay=false;
+  if(st&&Number.isInteger(st.i)&&st.i>=0&&st.i<SONGS.length){load(st.i,st.t);wantPlay=!!st.playing}else load(0,0);
+  function resumeOnFirstTouch(){const go=e=>{if(e.target&&e.target.closest&&e.target.closest('#musicPill'))return;window.removeEventListener('pointerdown',go,true);window.removeEventListener('keydown',go,true);play().catch(()=>{})};window.addEventListener('pointerdown',go,true);window.addEventListener('keydown',go,true)}
+  if(wantPlay)play().catch(resumeOnFirstTouch);
+  btn.addEventListener('click',()=>{if(audio.paused)play().catch(()=>{});else audio.pause()});
+  audio.addEventListener('play',()=>{ui();save()});audio.addEventListener('pause',()=>{ui();save()});
+  audio.addEventListener('ended',()=>{load(cur+1,0);play().catch(()=>{})});
+  audio.addEventListener('error',()=>{title.textContent='(music folder not found)'});
+  audio.addEventListener('timeupdate',()=>{const n=Date.now();if(n-lastSave>1000){lastSave=n;save()}});
+  window.addEventListener('pagehide',save);
+  return {save};
+})();
+
+/* ---------- soft fade when leaving / arriving ---------- */
+const fade=document.getElementById('pageFade');
+requestAnimationFrame(()=>setTimeout(()=>fade.classList.add('hide'),120));
+window.addEventListener('pageshow',()=>fade.classList.add('hide'));
+function goBackToSite(){Music.save();fade.classList.remove('hide');setTimeout(()=>{window.location.href='./index.html'},450)}
+
+/* ---------- little typing sound ---------- */
+let actx;
+function tick(){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type='triangle';o.frequency.value=1300+Math.random()*500;g.gain.setValueAtTime(.03,actx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+.045);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.05)}catch(e){}}
+
+(() => {
+ const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+ const start=document.getElementById('start'),game=document.getElementById('game'),ending=document.getElementById('ending');
+ const count=document.getElementById('count');
+ const W=800,H=360;
+
+ /* ================= PIXEL SPRITES =================
+    Each sprite is a little text grid; every letter is a colour from its palette, "." is transparent. */
+ function spr(rows,pal,s=2){const w=Math.max(...rows.map(r=>r.length)),c=document.createElement('canvas');c.width=w*s;c.height=rows.length*s;const x=c.getContext('2d');rows.forEach((r,j)=>{for(let i=0;i<r.length;i++){const col=pal[r[i]];if(col){x.fillStyle=col;x.fillRect(i*s,j*s,s,s)}}});return c}
+ function flip(c){const f=document.createElement('canvas');f.width=c.width;f.height=c.height;const x=f.getContext('2d');x.translate(c.width,0);x.scale(-1,1);x.drawImage(c,0,0);return f}
+
+ // --- the birthday girl (front-facing chibi with a bow) ---
+ const GIRL_PAL={o:'#5a2f4f',h:'#7a4566',H:'#a8709a',s:'#ffdcc4',e:'#3a2236',c:'#ff9fb5',m:'#d0577f',b:'#ff6fa5',w:'#ffffff',d:'#f58fb8',D:'#d96f9c',R:'#fff0f6',l:'#ffdcc4'};
+ const FACE="..oh"+"ssssss"+"ho..",EYES="..oh"+"sesses"+"ho..",MOUTH="..oh"+"csmmsc"+"ho..",CHIN="...o"+"ssssss"+"o...";
+ const GIRL_HEAD=["....oooooo.bb.","...ohhhhhhobwb","..ohHHhhhhhobb","..oh"+"hhhhhh"+"ho..",FACE];
+ const GIRL_EYES_OPEN=[EYES,EYES],GIRL_EYES_SHUT=[FACE,EYES];
+ const GIRL_BODY=[MOUTH,CHIN,"....odwwdo....","..osddddddso..","..osddRRddso..",".oddddddddddo.",".oDDDDDDDDDDo."];
+ const LEGS={idle:["....olo..olo..","....ooo..ooo.."],a:["...olo....olo.","...oo.....oo.."],b:[".....olo.olo..",".....oo..oo..."],jump:["....oloolo....","....oo..oo...."]};
+ const GIRL={};
+ for(const k in LEGS){for(const blink of [0,1]){const r=spr([...GIRL_HEAD,...(blink?GIRL_EYES_SHUT:GIRL_EYES_OPEN),...GIRL_BODY,...LEGS[k]],GIRL_PAL,2);GIRL[k+blink]=[r,flip(r)]}}
+
+ // --- Mom: same chibi base, long brown hair, lavender dress, a bun instead of a bow ---
+ const MOM_PAL={...GIRL_PAL,h:'#5b3a2e',H:'#80574a',b:'#5b3a2e',w:'#80574a',d:'#c3b0f5',D:'#9d89dc',R:'#ffffff'};
+ const MOM=spr([...GIRL_HEAD,...GIRL_EYES_OPEN,MOUTH,"..oh"+"ssssss"+"ho..","..hhodwwdohh..","..osddddddso..","..osddRRddso..",".oddddddddddo.",".oddddddddddo.",".oddddddddddo.",".oDDDDDDDDDDo.",...LEGS.idle],MOM_PAL,2);
+ // --- Dad: short hair, round glasses, moustache, shirt + tie ---
+ const DAD_PAL={o:'#3d2b3a',h:'#4a3a33',s:'#f2c7a5',G:'#3d2b3a',e:'#3d2b3a',c:'#f5a0b0',k:'#4a3a33',b:'#9fd0f0',t:'#ff6f91',B:'#5a4a6e',P:'#6a6f9e'};
+ const DAD=spr([
+  "....oooooo....",
+  "...ohhhhhho...",
+  "..ohhhhhhhho..",
+  FACE,
+  "..osGeGGeGso..",
+  "..ocsskkssco..",
+  CHIN,
+  "...obbbtbbo...",
+  "..osbbbtbbso..",
+  "..osbbbtbbso..",
+  "..osbbbbbbso..",
+  "...oBBBBBBo...",
+  "...oPPPPPPo...",
+  "...oPPooPPo...",
+  "...oPPooPPo...",
+  "...oPPooPPo...",
+  "..oooo..oooo..",
+ ],DAD_PAL,2);
+
+ // --- HATE: a grumpy little storm-blob ---
+ const HATE_PAL={o:'#3a2236',p:'#9d6ab8',P:'#7e4f9a',k:'#2b1830',w:'#ffffff',e:'#2b1830'};
+ const HATE_ROWS=[
+  "...oooo.ooo...",
+  "..oppppopppo..",
+  ".opppppppppppo",
+  "oppkkppppkkppo",
+  "oppppkppkppppo",
+  "oppweppppewppo",
+  "oppwwppppwwppo",
+  "opppppkkpppppo",
+  "oppppkppkppppo",
+  "oPPPPPPPPPPPPo",
+  ".oPPPPPPPPPPo.",
+  "..ooo....ooo..",
+ ];
+ const HATE=spr(HATE_ROWS,HATE_PAL,2),HATE_F=flip(HATE);
+
+ const HEART=spr([".oo...oo.","oRRo.oRRo","oRwRRRRRo","oRRRRRRRo",".oRRRRRo.","..oRRRo..","...oRo...","....o...."],{o:'#b03a6e',R:'#ff6fa5',w:'#ffffff'},2);
+ const FLOWER=spr(["...ooooo...","..oyyyyyo..",".oyyoooyyo.","oyyocccoyyo","oyyocCcoyyo","oyyocccoyyo",".oyyoooyyo.","..oyyyyyo..","...qqgqq...","....qgq....",".qggqgq....","....qgqggq.","....qgqq...","....qgq...."],{o:'#c9883d',y:'#ffd36b',c:'#a5684a',C:'#e0a77a',q:'#4f8a4c',g:'#7cc276'},2);
+ const MAILBOX=spr(["...oooooooo...","..oMMMMMMMMo..",".oMMMMMMMMMMo.",".oMMkkkkkkMMo.",".oMMMMMMMMMMoF",".oMMRRMRRMMMoF",".oMMRRRRRMMMoF",".oMMMRRRMMMMo.",".oMMMMRMMMMMo.",".oNNNNNNNNNNo.",".oooooooooooo.","......oPo.....","......oPo.....","......oPo.....","......oPo.....","....oooooo...."],{o:'#8a3f66',M:'#f7a9c8',N:'#e07fa8',k:'#7a3a5e',R:'#ff5f97',P:'#c79ab5',F:'#ff6f91'},3);
+ const CLOUD=spr([".....oooo..........","...ooWWWWoo.ooo....","..oWWWWWWWWoWWWoo..",".oWWWWWWWWWWWWWWWo.","oWWWWWWWWWWWWWWWWWo","oWWWWWWWWWWWWWWWWWo",".oSSSSSSSSSSSSSSSo.","..ooooooooooooooo.."],{o:'#f3c6dc',W:'#ffffff',S:'#fbe3ef'},3);
+ const KEEP={
+  photo:spr(["oooooooooo","owwwwwwwwo","owSSSSSSwo","owSSSSySwo","owSGGSSSwo","owGGGGGGwo","owwwwwwwwo","owwwRwwwwo","oooooooooo"],{o:'#8a3f66',w:'#ffffff',S:'#bfe3ff',y:'#ffd36b',G:'#9fd49a',R:'#ff6fa5'},2),
+  ring:spr(["...oDDo...","..oDwDDo..","...oDDo...","..ooYYoo..",".oYYooYYo.","oYo....oYo","oYo....oYo",".oYYooYYo.","..oYYYYo..","...oooo..."],{o:'#8a5a2e',D:'#bde8ff',w:'#ffffff',Y:'#ffd36b'},2),
+  teddy:spr([".oo....oo.","oTtooooTto",".oTTTTTTo.","oTTeTTeTTo","oTTtnntTTo",".oTTttTTo.","oTTTRRTTTo","oTTTTTTTTo","oTTTooTTTo",".ooo..ooo."],{o:'#6b4230',T:'#c98b62',t:'#f0c39e',e:'#3a2236',n:'#3a2236',R:'#ff7fae'},2)
+ };
+
+ /* ================= WORLD ================= */
+ let worldW=1900,level=1;
+ const levelOnePlatforms=[{x:0,y:300,w:330},{x:390,y:270,w:170},{x:610,y:235,w:150},{x:810,y:275,w:180},{x:1040,y:245,w:160},{x:1240,y:280,w:180},{x:1470,y:245,w:170},{x:1680,y:300,w:220}];
+ const levelOneHearts=[{x:185,y:262},{x:458,y:232},{x:683,y:197},{x:1108,y:207},{x:1538,y:217}];
+ const levelTwoPlatforms=[{x:0,y:300,w:260},{x:320,y:270,w:170},{x:550,y:235,w:150},{x:760,y:275,w:180},{x:1000,y:245,w:170},{x:1230,y:275,w:180},{x:1480,y:245,w:190},{x:1730,y:300,w:220}];
+ const levelTwoKeepsakes=[{x:625,y:200,k:'photo'},{x:1085,y:205,k:'ring'},{x:1575,y:205,k:'teddy'}];
+ let platforms=levelOnePlatforms,hearts=levelOneHearts;
+ let player,got,camera,keys,done,raf,particles=[],enemies=[],balls=[],hasFlower=false,walkTick=0,hurt=0,t=0;
+
+ function setHelp(lvl){document.getElementById('levelTag').textContent=lvl===1?'LEVEL 1 · THE LITTLE JOURNEY':'LEVEL 2 · THE PARENT APPROVAL QUEST';document.getElementById('gameHelp').textContent=lvl===1?'Collect hearts, grab the flower power-up, and press X / K to throw magic balls at the HATE enemies!':'Collect the 3 family keepsakes (a photo, a ring and a teddy), then walk to Mom & Dad at the little house!'}
+ function newPlayer(){return {x:45,y:240,vx:0,vy:0,w:22,h:30,on:false,face:1}}
+ function reset(){level=1;worldW=1900;platforms=levelOnePlatforms;hearts=levelOneHearts;player=newPlayer();got=new Set();camera=0;keys={};done=false;particles=[];balls=[];hasFlower=false;walkTick=0;hurt=0;
+  enemies=[{x:520,y:242,w:24,h:28,dir:1,min:420,max:540,alive:true},{x:920,y:247,w:24,h:28,dir:-1,min:825,max:960,alive:true},{x:1370,y:252,w:24,h:28,dir:1,min:1255,max:1395,alive:true}];setHelp(1);draw()}
+ function beginLevelTwo(){level=2;worldW=1950;platforms=levelTwoPlatforms;hearts=levelTwoKeepsakes;player=newPlayer();got=new Set();camera=0;keys={};done=false;particles=[];balls=[];hasFlower=true;walkTick=0;hurt=0;enemies=[];setHelp(2);draw()}
+ function show(which){[start,game,ending].forEach(s=>s.classList.add('hidden'));which.classList.remove('hidden')}
+ function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+ function burst(x,y,n,colors){for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*3.2,vy:-Math.random()*2.8-.4,life:26+Math.random()*12,c:colors[i%colors.length],heart:Math.random()<.35})}
+
+ function drawSky(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  if(level===1){g.addColorStop(0,'#f9d3ea');g.addColorStop(.6,'#e2d8ff');g.addColorStop(1,'#d4ecf5')}else{g.addColorStop(0,'#c9a5e8');g.addColorStop(.45,'#ffb7c9');g.addColorStop(1,'#ffd9a8')}
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // sun (level 1) or big sunset sun (level 2)
+  const sx=640-camera*.04,sy=level===1?62:150,r=level===1?26:44;
+  ctx.fillStyle=level===1?'rgba(255,246,200,.5)':'rgba(255,232,190,.45)';ctx.beginPath();ctx.arc(sx,sy,r+14,0,7);ctx.fill();
+  ctx.fillStyle=level===1?'#fff3c4':'#ffe1a6';for(let y=-r;y<r;y+=3){const hw=Math.round(Math.sqrt(r*r-y*y)/3)*3;rect(sx-hw,sy+y,hw*2,3,ctx.fillStyle)}
+  // twinkling stars
+  for(let i=0;i<26;i++){const x=((i*53-camera*.08)%W+W)%W,y=14+(i*37)%140,on=(Math.sin(t/20+i*1.7)+1)/2;if(on>.35){rect(x,y,2,2,'#fffbe6');if(on>.85){rect(x-2,y,6,2,'#fffbe6');rect(x,y-2,2,6,'#fffbe6')}}}
+  // clouds (slow parallax)
+  for(let i=0;i<6;i++){const x=((i*170-camera*.15+t*.08)%(W+140)+W+140)%(W+140)-90,y=24+(i%3)*30;ctx.drawImage(CLOUD,Math.round(x),y)}
+  // far hills then near hills (two parallax layers)
+  hills(.12,232,level===1?'#d8c9f3':'#d9a3d6',38,.011);
+  hills(.25,256,level===1?'#bfe0bb':'#e4b39a',30,.017);
+ }
+ function hills(par,base,col,amp,freq){ctx.fillStyle=col;for(let x=0;x<W;x+=4){const wx=x+camera*par,h=Math.round((Math.sin(wx*freq)*.6+Math.sin(wx*freq*2.3+1)*.4)*amp/4)*4;ctx.fillRect(x,base-h,4,H)}}
+
+ function drawPlatform(p){
+  const x=Math.round(p.x-camera);if(x+p.w<0||x>W)return;
+  const dirt=level===1?'#e8bc98':'#e0a98f',dark=level===1?'#cf9b78':'#c58b74',grass='#9fd49a',light='#cdeeb4',edge='#6f9e6a';
+  rect(x,p.y,p.w,H-p.y,dirt);rect(x,p.y,3,H-p.y,dark);rect(x+p.w-3,p.y,3,H-p.y,dark);
+  for(let k=10;k<p.w-8;k+=22){rect(x+k,p.y+20+((k*7)%34),6,3,dark);rect(x+k+8,p.y+44+((k*5)%30),3,3,dark)}
+  rect(x-2,p.y-2,p.w+4,12,edge);rect(x,p.y,p.w,9,grass);rect(x,p.y,p.w,3,light);
+  for(let k=0;k<p.w;k+=10)rect(x+k+2,p.y+9,6,3,grass);
+  // tiny flowers on the grass
+  const cols=['#ff8fb8','#fff3a8','#c9b3ff','#ffffff'];
+  for(let k=14;k<p.w-12;k+=38){const c=cols[((p.x+k)/38|0)%cols.length],fx=x+k,fy=p.y-6;rect(fx+2,fy+2,2,5,'#6fb06a');rect(fx,fy,6,2,c);rect(fx+2,fy-2,2,6,c);rect(fx+2,fy,2,2,'#ffcf5a')}
+ }
+
+ function drawGirl(){
+  const moving=Math.abs(player.vx)>.1;let k='idle';
+  if(!player.on)k='jump';else if(moving)k=(Math.floor(walkTick/7)%2)?'a':'b';
+  const blink=(t%190)<7?1:0,img=GIRL[k+blink][player.face>0?0:1];
+  const px=Math.round(player.x-camera-3),bob=(!moving&&player.on)?Math.round(Math.sin(t/14)):0;
+  ctx.fillStyle='rgba(90,47,79,.18)';ctx.beginPath();ctx.ellipse(player.x-camera+11,player.y+player.h+1,11,3,0,0,7);ctx.fill();
+  if(hurt>0&&Math.floor(hurt/4)%2)return;
+  ctx.drawImage(img,px,Math.round(player.y-2+bob));
+  if(hasFlower&&level===1){const fx=px+(player.face>0?-4:26),fy=player.y+4;rect(fx,fy,3,3,'#ffd36b')}
+ }
+ function drawEnemy(e){
+  const x=Math.round(e.x-camera-2),bob=Math.round(Math.abs(Math.sin(t/8+e.min))*3);
+  ctx.fillStyle='rgba(58,34,54,.18)';ctx.beginPath();ctx.ellipse(x+14,e.y+e.h+1,11,3,0,0,7);ctx.fill();
+  ctx.drawImage(e.dir>0?HATE:HATE_F,x,e.y+4-bob);
+  // little angry steam puffs
+  if((t+e.min)%60<20){rect(x+3,e.y-4-bob,3,3,'#d9c4e8');rect(x+22,e.y-6-bob,3,3,'#d9c4e8')}
+  ctx.font='8px "Press Start 2P", monospace';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('HATE',x+15,e.y-9-bob);ctx.fillStyle='#713d69';ctx.fillText('HATE',x+14,e.y-10-bob);ctx.textAlign='left';
+ }
+ function drawFlower(){
+  if(hasFlower)return;
+  const x=875-camera,y=235+Math.sin(t/16)*3;
+  ctx.fillStyle='rgba(255,236,150,.35)';ctx.beginPath();ctx.arc(x,y,22+Math.sin(t/10)*2,0,7);ctx.fill();
+  ctx.drawImage(FLOWER,Math.round(x-11),Math.round(y-14));
+  for(let i=0;i<3;i++){const a=t/18+i*2.1;rect(x+Math.cos(a)*20,y+Math.sin(a)*16,2,2,'#fff7c0')}
+ }
+ function drawCollectible(h,i){
+  const x=h.x-camera,y=h.y+Math.sin(t/16+i)*3;
+  const img=level===1?HEART:KEEP[h.k];
+  ctx.fillStyle=level===1?'rgba(255,170,205,.28)':'rgba(255,240,200,.45)';ctx.beginPath();ctx.arc(x,y,level===1?13:17,0,7);ctx.fill();
+  ctx.drawImage(img,Math.round(x-img.width/2),Math.round(y-img.height/2));
+  if((t+i*23)%70<10)rect(x+9,y-12,2,2,'#ffffff');
+ }
+ function drawSignAndMailbox(){
+  const fx=1745-camera;rect(fx+10,262,4,38,'#a8798b');rect(fx,248,46,18,'#8a3f66');rect(fx+2,250,42,14,'#fff2f8');
+  ctx.font='8px "Press Start 2P", monospace';ctx.fillStyle='#d0577f';ctx.fillText('MAIL♡',fx+4,261);
+  const mx=1812-camera,my=300-MAILBOX.height+2;ctx.drawImage(MAILBOX,mx,my);
+  const hy=my-20+Math.sin(t/12)*3;ctx.drawImage(HEART,mx+12,Math.round(hy));
+ }
+ function drawFamilyHouse(x,y){
+  x=Math.round(x);const o='#8a3f66';
+  // chimney + smoke
+  rect(x+98,y-2,16,26,o);rect(x+100,y,12,24,'#e89abd');
+  for(let i=0;i<3;i++){const s=((t*.4+i*22)%66);rect(x+102+Math.sin((t+i*30)/14)*4,y-6-s,6+i,6+i,'rgba(255,255,255,'+(0.7-s/100)+')')}
+  // roof (stepped)
+  for(let i=0;i<7;i++)rect(x+4+i*8,y+38-i*6,134-i*16,8,i%2?'#e07fa8':'#ef9ec4');
+  rect(x,y+38,142,6,o);
+  // walls
+  rect(x+10,y+44,122,64,o);rect(x+13,y+44,116,61,'#fff4ea');
+  for(let k=0;k<116;k+=14)rect(x+13+k,y+60,1,45,'#f6e2d6');
+  // windows with warm light + heart
+  rect(x+24,y+54,30,26,o);rect(x+27,y+57,24,20,'#ffe9a8');rect(x+38,y+57,2,20,o);rect(x+27,y+66,24,2,o);
+  rect(x+22,y+80,34,4,'#ef9ec4');rect(x+26,y+77,4,3,'#ff6fa5');rect(x+36,y+77,4,3,'#c9b3ff');rect(x+46,y+77,4,3,'#ff6fa5');
+  // door
+  rect(x+84,y+60,30,48,o);rect(x+87,y+63,24,45,'#c27a9d');rect(x+89,y+65,20,18,'#d68fb0');rect(x+105,y+86,3,3,'#ffe9a8');
+  ctx.drawImage(HEART,x+90,y+66);
+  // path + bushes
+  rect(x+80,y+108,38,4,'#f4d4c0');
+  for(const bx of [x+4,x+60,x+122]){rect(bx,y+96,22,12,'#6f9e6a');rect(bx+2,y+94,18,12,'#9fd49a');rect(bx+6,y+97,3,3,'#ff8fb8');rect(bx+13,y+100,3,3,'#fff3a8')}
+  // parents
+  const b1=Math.round(Math.abs(Math.sin(t/12))*2),b2=Math.round(Math.abs(Math.sin(t/12+1.5))*2);
+  ctx.drawImage(MOM,x-38,y+108-MOM.height-b1);ctx.drawImage(DAD,x+146,y+108-DAD.height-b2);
+  if(t%120<60){ctx.drawImage(HEART,x-28,y+108-MOM.height-26)}else{ctx.drawImage(HEART,x+156,y+108-DAD.height-26)}
+  ctx.font='10px "Press Start 2P", monospace';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('MOM  +  DAD',x+72,y-17);ctx.fillStyle='#8e527c';ctx.fillText('MOM  +  DAD',x+71,y-18);ctx.textAlign='left';
+ }
+ function drawBall(b){
+  const x=b.x-camera,y=b.y;
+  ctx.fillStyle='rgba(255,180,215,.35)';ctx.beginPath();ctx.arc(x+5,y+5,10,0,7);ctx.fill();
+  const s=(t%8<4)?1:0;
+  rect(x+3,y-1-s,4,12+s*2,'#fff6c2');rect(x-1-s,y+3,12+s*2,4,'#fff6c2');rect(x+1,y+1,8,8,'#ffd36b');rect(x+3,y+3,4,4,'#ff9bca');rect(x+4,y+4,2,2,'#ffffff');
+ }
+ function drawParticles(){particles.forEach(p=>{const x=p.x-camera,y=p.y;if(p.heart){rect(x,y,2,2,p.c);rect(x+3,y,2,2,p.c);rect(x,y+2,5,2,p.c);rect(x+1,y+4,3,1,p.c)}else rect(x,y,3,3,p.c)})}
+
+ function draw(){
+  t++;ctx.clearRect(0,0,W,H);drawSky();
+  platforms.forEach(drawPlatform);
+  hearts.forEach((h,i)=>{if(!got.has(i))drawCollectible(h,i)});
+  if(level===1){drawFlower();enemies.forEach(e=>{if(e.alive)drawEnemy(e)});drawSignAndMailbox()}
+  if(level===2)drawFamilyHouse(1770-camera,190);
+  balls.forEach(drawBall);
+  drawGirl();drawParticles();
+  if(level===1)count.textContent='♡ Hearts: '+got.size+' / 5'+(hasFlower?'  ✿ MAGIC BALLS READY':'  ✿ Find the flower');
+  else{const icons={photo:'📷',ring:'💍',teddy:'🧸'};count.textContent='♡ Keepsakes: '+got.size+' / 3  '+hearts.map((h,i)=>got.has(i)?icons[h.k]:'·').join(' ')}
+ }
+ function drawPreview(){
+  const c=document.getElementById('preview'),x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  const g=x.createLinearGradient(0,0,0,96);g.addColorStop(0,'#f9d3ea');g.addColorStop(1,'#e2d8ff');x.fillStyle=g;x.fillRect(0,0,320,96);
+  x.fillStyle='#9fd49a';x.fillRect(0,80,320,16);x.fillStyle='#cdeeb4';x.fillRect(0,80,320,3);
+  const pt=Math.floor(Date.now()/120);
+  x.drawImage(GIRL[(pt%2?'a':'b')+'0'][0],60,48);x.drawImage(HEART,100,40+(pt%4<2?0:-2));x.drawImage(FLOWER,140,52);x.drawImage(HATE_F,190,56+(pt%4<2?0:-2));x.drawImage(KEEP.teddy,240,60);x.drawImage(KEEP.ring,270,60);
+  if(!start.classList.contains('hidden'))requestAnimationFrame(drawPreview);
+ }
+
+ function collide(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+ function shootBall(){
+  if(!hasFlower||done)return;
+  const now=Date.now();if(shootBall.last&&now-shootBall.last<380)return;shootBall.last=now;
+  balls.push({x:player.x+(player.face>0?player.w:0),y:player.y+11,vx:player.face*5.2,life:100});
+ }
+ function frame(){
+  if(done)return;
+  let dir=(keys.right?1:0)-(keys.left?1:0);player.vx=dir*2.5;if(dir)player.face=dir;
+  player.x=Math.max(0,Math.min(worldW-player.w,player.x+player.vx));
+  player.vy=Math.min(8,player.vy+.38);let oldY=player.y;player.y+=player.vy;player.on=false;
+  if(player.y+player.h>=H+80){player.x=Math.max(0,player.x-90);player.y=190;player.vy=0}
+  for(const p of platforms){if(player.vy>=0&&oldY+player.h<=p.y&&player.y+player.h>=p.y&&player.x+player.w>p.x&&player.x<p.x+p.w){player.y=p.y-player.h;player.vy=0;player.on=true}}
+  walkTick++;if(hurt>0)hurt--;
+  const cx=player.x+player.w/2,cy=player.y+player.h/2;
+  if(level===1&&!hasFlower&&Math.abs(cx-875)<28&&Math.abs(cy-235)<45){hasFlower=true;burst(875,230,18,['#ffd36b','#fff7b8','#ff9bca'])}
+  hearts.forEach((h,i)=>{if(!got.has(i)&&Math.abs(cx-h.x)<22&&Math.abs(cy-h.y)<28){got.add(i);burst(h.x,h.y,12,['#ff6fa5','#fff0f6','#ffd36b','#c9b3ff'])}});
+  enemies.forEach(e=>{if(!e.alive)return;e.x+=e.dir*.65;if(e.x<e.min||e.x>e.max)e.dir*=-1;
+    if(collide(player,e)){if(player.vy>1&&player.y+player.h-e.y<14){e.alive=false;player.vy=-5;burst(e.x+12,e.y+12,14,['#c9b3ff','#ff9bca','#fff7b8'])}else if(hurt===0){player.x=Math.max(0,player.x-45);player.vy=-3.5;hurt=40}}
+  });
+  balls.forEach(b=>{b.x+=b.vx;b.life--;if(t%2)particles.push({x:b.x+5,y:b.y+5+(Math.random()-.5)*6,vx:-b.vx*.1,vy:0,life:12,c:'#fff3b0'});enemies.forEach(e=>{if(e.alive&&collide({x:b.x,y:b.y,w:10,h:10},e)){e.alive=false;b.life=0;burst(e.x+12,e.y+12,16,['#c9b3ff','#ff9bca','#fff7b8','#ffffff'])}})});
+  balls=balls.filter(b=>b.life>0&&b.x>0&&b.x<worldW);
+  particles=particles.filter(p=>p.life-->0);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.08});
+  const target=Math.max(0,Math.min(worldW-W,player.x-W*.32));camera+= (target-camera)*.15;
+  if(level===1&&player.x>1780&&got.size>=5){done=true;show(ending);typeLetter(message);return}
+  if(level===2&&player.x>1730&&got.size>=3){done=true;show(ending);typeLetter('You made it to Mom & Dad! ♡\nThey say: of course you are cute, silly.\nWe love you lots!');document.getElementById('choiceButtons').classList.add('hidden');reaction.classList.remove('hidden');reactionText.textContent='OFFICIAL PARENT VERDICT: 100% CUTE. NO APPEALS. 💗';rajniGif.classList.add('hidden');document.getElementById('finalControls').classList.remove('hidden');return}
+  draw();raf=requestAnimationFrame(frame);
+ }
+ let letterTimer;
+ const message="Why are u so cute, Butku? ♡";
+ function typeLetter(msg){clearInterval(letterTimer);const el=document.getElementById('letter');el.textContent='';let i=0;const chars=[...msg];letterTimer=setInterval(()=>{el.textContent=chars.slice(0,++i).join('');if(i%2)tick();if(i>=chars.length)clearInterval(letterTimer)},55)}
+ const reaction=document.getElementById('reaction');
+ const reactionText=document.getElementById('reactionText');
+ const rajniGif=document.getElementById('rajniGif');
+ function clearReaction(){reaction.classList.add('hidden');rajniGif.classList.add('hidden');reactionText.textContent='';}
+ document.getElementById('notCute').addEventListener('click',()=>{reaction.classList.remove('hidden');reactionText.textContent='HAHAHAHA 😂';rajniGif.classList.remove('hidden')});
+ document.getElementById('askParents').addEventListener('click',()=>{clearInterval(letterTimer);clearReaction();document.getElementById('choiceButtons').classList.add('hidden');cancelAnimationFrame(raf);show(game);beginLevelTwo();frame()});
+ function begin(){cancelAnimationFrame(raf);clearInterval(letterTimer);clearReaction();document.getElementById('choiceButtons').classList.remove('hidden');document.getElementById('finalControls').classList.add('hidden');reset();show(game);frame()}
+ document.getElementById('backFromStart').addEventListener('click',goBackToSite);document.getElementById('backFromEnd').addEventListener('click',goBackToSite);document.getElementById('play').addEventListener('click',begin);document.getElementById('restart').addEventListener('click',begin);document.getElementById('again').addEventListener('click',begin);
+ window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup',' '].includes(k)&&!game.classList.contains('hidden'))e.preventDefault();if(k==='arrowleft'||k==='a')keys.left=true;if(k==='arrowright'||k==='d')keys.right=true;if(k==='arrowup'||k==='w'||k===' '){if(player&&player.on&&!done)player.vy=-7.4}if(k==='x'||k==='k')shootBall()});
+ window.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=false;if(k==='arrowright'||k==='d')keys.right=false});
+ function bindHold(id,key){const b=document.getElementById(id);const down=e=>{e.preventDefault();keys[key]=true},up=e=>{e.preventDefault();keys[key]=false};b.addEventListener('pointerdown',down);['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,up))}
+ bindHold('left','left');bindHold('right','right');document.getElementById('jump').addEventListener('pointerdown',e=>{e.preventDefault();if(player&&player.on)player.vy=-7.4});document.getElementById('shoot').addEventListener('pointerdown',e=>{e.preventDefault();shootBall()});
+ reset();drawPreview();
+})();
+</script>
+</body>
+</html>
